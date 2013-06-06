@@ -9,4 +9,7 @@ Then, compile the `customMicronucleus` application with the new created `program
 
 Also, give a meaningfull name to your customMicronucleus application by editing `PROGRAM_NAME` variable at the Makefile.
 
+Warning:
+This program isn't working properly as of this moment :)
+
 ihsan.
