@@ -49,10 +49,10 @@ micronucleus* micronucleus_connect() {
         nucleus->version.minor = dev->descriptor.bcdUSB & 0xFF;
         
         if (nucleus->version.major > MICRONUCLEUS_MAX_MAJOR_VERSION) {
-	        fprintf(stderr, "Warning: device with unknown new version of Micronucleus detected.\n");
-	        fprintf(stderr, "This tool doesn't know how to upload to this new device. Updates may be available.\n");
-	        fprintf(stderr, "Device reports version as: %d.%d\n", nucleus->version.major, nucleus->version.minor);
-	        return NULL;
+          fprintf(stderr, "Warning: device with unknown new version of Micronucleus detected.\n");
+          fprintf(stderr, "This tool doesn't know how to upload to this new device. Updates may be available.\n");
+          fprintf(stderr, "Device reports version as: %d.%d\n", nucleus->version.major, nucleus->version.minor);
+          return NULL;
         }
         
         nucleus->device = usb_open(dev);
@@ -167,6 +167,5 @@ int micronucleus_startApp(micronucleus* deviceHandle) {
   else 
     return 0;
 }
-
 
 

@@ -70,24 +70,89 @@ int main(int argc, char **argv) {
   micronucleus *my_device = NULL;
 
   // parse arguments
-  int run = 1;
-  int file_type = FILE_TYPE_INTEL_HEX; 
+  int run = 0;
+  int file_type = FILE_TYPE_INTEL_HEX;
+  int arg_pointer = 1;
+  char* usage = "usage: micronucleus [--run] [--dump-progress] [--type intel-hex|raw] [--no-ansi] [--timeout integer] filename";
   progress_step = 0;
   progress_total_steps = 5; // steps: waiting, connecting, parsing, erasing, writing, (running)?
   dump_progress = 0;
   timeout = 0; // no timeout by default
-  use_ansi = 1;
+  //#if defined(WIN)
+  //  use_ansi = 0;
+  //#else
+    use_ansi = 1;
+  //#endif
 
-  printf("---------------------------------------------------------------------------\n");
-  printf("-- Greetings!\n");
-  printf("-- This program is customised version of the micronucleus commandline app.\n");
-  printf("-- You are about to install %s to your device!\n",programName);
-  printf("---------------------------------------------------------------------------\n\n");
+  #if 1
+    printf("---------------------------------------------------------------------------\n");
+    printf("-- Greetings!\n");
+    printf("-- This program is customised version of the micronucleus commandline app.\n");
+    printf("-- You are about to install %s to your device!\n",programName);
+    printf("---------------------------------------------------------------------------\n\n");
+  #endif
+
+  #if 0
+
+  while (arg_pointer < argc) {
+    if (strcmp(argv[arg_pointer], "--run") == 0) {
+      run = 1;
+      progress_total_steps += 1;
+    } else if (strcmp(argv[arg_pointer], "--type") == 0) {
+      arg_pointer += 1;
+      if (strcmp(argv[arg_pointer], "intel-hex") == 0) {
+        file_type = FILE_TYPE_INTEL_HEX;
+      } else if (strcmp(argv[arg_pointer], "raw") == 0) {
+        file_type = FILE_TYPE_RAW;
+      } else {
+        printf("Unknown File Type specified with --type option");
+        return EXIT_FAILURE;
+      }
+    } else if (strcmp(argv[arg_pointer], "--help") == 0 || strcmp(argv[arg_pointer], "-h") == 0) {
+      puts(usage);
+      puts("");
+      puts("  --type [intel-hex, raw]: Set upload file type to either intel hex or raw");
+      puts("                           bytes (intel hex is default)");
+      puts("          --dump-progress: Output progress data in computer-friendly form");
+      puts("                           for driving GUIs");
+      puts("                    --run: Ask bootloader to run the program when finished");
+      puts("                           uploading provided program");
+      //#ifndef WIN
+      puts("                --no-ansi: Don't use ANSI in terminal output");
+      //#endif
+      puts("      --timeout [integer]: Timeout after waiting specified number of seconds");
+      puts("                 filename: Path to intel hex or raw data file to upload,");
+      puts("                           or \"-\" to read from stdin");
+      return EXIT_SUCCESS;
+    } else if (strcmp(argv[arg_pointer], "--dump-progress") == 0) {
+      dump_progress = 1;
+    } else if (strcmp(argv[arg_pointer], "--no-ansi") == 0) {
+      use_ansi = 0;
+    } else if (strcmp(argv[arg_pointer], "--timeout") == 0) {
+      arg_pointer += 1;
+      if (sscanf(argv[arg_pointer], "%d", &timeout) != 1) {
+        printf("Did not understand --timeout value\n");
+        return EXIT_FAILURE;
+      }
+    } else {
+      file = argv[arg_pointer];
+    }
+    
+    arg_pointer += 1;
+  }
+  
+  if (argc < 2) {
+    puts(usage);
+    return EXIT_FAILURE;
+  }
+
+  #endif
   
   setProgressData("waiting", 1);
   if (dump_progress) printProgress(0.5);
   printf("> Please plug in the device ... \n");
   printf("> Press CTRL+C to terminate the program.\n");
+  
   
   time_t start_time, current_time;
   time(&start_time);
@@ -117,9 +182,19 @@ int main(int argc, char **argv) {
     wait += 50.0f;
     delay(50);
   }
-    
+  
+  //my_device = micronucleus_connect();
   printProgress(1.0);
     
+  // if (my_device->page_size == 64) {
+  //   printf("> Device looks like ATtiny85!\n");
+  // } else if (my_device->page_size == 32)  {
+  //   printf("> Device looks like ATtiny45!\n");
+  // } else {
+  //   printf("> Unsupported device!\n");
+  //   return EXIT_FAILURE;
+  // }
+  
   printf("> Available space for user application: %d bytes\n", my_device->flash_size);
   printf("> Suggested sleep time between sending pages: %ums\n", my_device->write_sleep);
   printf("> Whole page count: %d\n", my_device->pages);
@@ -127,7 +202,23 @@ int main(int argc, char **argv) {
   
   setProgressData("parsing", 3);
   printProgress(0.0);
+  
+  #if 0
   memset(dataBuffer, 0xFF, sizeof(dataBuffer));
+  
+  int startAddress = 1, endAddress = 0;
+  if (file_type == FILE_TYPE_INTEL_HEX) {
+    if (parseIntelHex(file, dataBuffer, &startAddress, &endAddress)) {
+      printf("> Error loading or parsing hex file.\n");
+      return EXIT_FAILURE;
+    }
+  } else if (file_type == FILE_TYPE_RAW) {
+    if (parseRaw(file, dataBuffer, &startAddress, &endAddress)) {
+      printf("> Error loading raw file.\n");
+      return EXIT_FAILURE;
+    }
+  }
+  #endif
   
   printProgress(1.0);
 
