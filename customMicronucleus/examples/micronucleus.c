@@ -291,6 +291,10 @@ int main(int argc, char **argv) {
   }
   
   printf(">> Micronucleus done. Thank you!\n");
+
+  printf(">> Press enter to exit program ...\n");
+
+  getchar();
   
   return EXIT_SUCCESS;
 }
