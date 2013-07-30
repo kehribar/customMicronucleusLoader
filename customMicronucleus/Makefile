@@ -3,7 +3,7 @@
 
 CC=gcc
 
-PROGRAM_NAME = littlewireLoader
+PROGRAM_NAME = littlewireLoader_v12
 
 ifeq ($(shell uname), Linux)
 	USBFLAGS = `libusb-config --cflags`
